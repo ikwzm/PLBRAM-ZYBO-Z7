@@ -1,0 +1,27 @@
+/dts-v1/; /plugin/;
+/ {
+	fragment@0 {
+		target-path = "/amba/fpga-region0";
+		__overlay__ {
+			firmware-name = "plbram_256k.bin";
+		};
+        };
+	fragment@1 {
+		target-path = "/amba";
+		#address-cells = <0x1>;
+		#size-cells = <0x1>;
+		__overlay__ {
+			#address-cells = <0x1>;
+			#size-cells = <0x1>;
+			udmabuf_plmem {
+				compatible  = "ikwzm,u-dma-buf";
+				device-name = "udmabuf0";
+				reg = <0x40000000 0x00040000>;
+	                };
+			led4 {
+				compatible = "generic-uio";
+				reg = <0x43c00000 0x1000>;
+			};
+                };
+	} ;
+} ;
