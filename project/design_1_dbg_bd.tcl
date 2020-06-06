@@ -206,15 +206,15 @@ proc create_root_design { parentCell } {
 
   # Create instance: axi_bram_ctrl_0, and set properties
   set axi_bram_ctrl_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_bram_ctrl:4.1 axi_bram_ctrl_0 ]
+  set_property -dict [ list \
+   CONFIG.SINGLE_PORT_BRAM {1} \
+ ] $axi_bram_ctrl_0
 
   # Create instance: axi_interconnect_csr, and set properties
   set axi_interconnect_csr [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_interconnect:2.1 axi_interconnect_csr ]
 
   # Create instance: blk_mem_gen_0, and set properties
   set blk_mem_gen_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:blk_mem_gen:8.4 blk_mem_gen_0 ]
-
-  # Create instance: blk_mem_gen_1, and set properties
-  set blk_mem_gen_1 [ create_bd_cell -type ip -vlnv xilinx.com:ip:blk_mem_gen:8.4 blk_mem_gen_1 ]
 
   # Create instance: proc_sys_reset_0, and set properties
   set proc_sys_reset_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:proc_sys_reset:5.0 proc_sys_reset_0 ]
@@ -699,40 +699,38 @@ proc create_root_design { parentCell } {
   # Create instance: system_ila_0, and set properties
   set system_ila_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:system_ila:1.1 system_ila_0 ]
   set_property -dict [ list \
-   CONFIG.C_BRAM_CNT {47} \
-   CONFIG.C_DATA_DEPTH {8192} \
-   CONFIG.C_MON_TYPE {MIX} \
-   CONFIG.C_NUM_MONITOR_SLOTS {1} \
-   CONFIG.C_NUM_OF_PROBES {1} \
-   CONFIG.C_PROBE0_TYPE {0} \
-   CONFIG.C_SLOT_0_APC_EN {0} \
-   CONFIG.C_SLOT_0_AXI_AR_SEL_DATA {1} \
-   CONFIG.C_SLOT_0_AXI_AR_SEL_TRIG {1} \
-   CONFIG.C_SLOT_0_AXI_AW_SEL_DATA {1} \
-   CONFIG.C_SLOT_0_AXI_AW_SEL_TRIG {1} \
-   CONFIG.C_SLOT_0_AXI_B_SEL_DATA {1} \
-   CONFIG.C_SLOT_0_AXI_B_SEL_TRIG {1} \
-   CONFIG.C_SLOT_0_AXI_R_SEL_DATA {1} \
-   CONFIG.C_SLOT_0_AXI_R_SEL_TRIG {1} \
-   CONFIG.C_SLOT_0_AXI_W_SEL_DATA {1} \
-   CONFIG.C_SLOT_0_AXI_W_SEL_TRIG {1} \
-   CONFIG.C_SLOT_0_INTF_TYPE {xilinx.com:interface:aximm_rtl:1.0} \
+   CONFIG.C_MON_TYPE {INTERFACE} \
+   CONFIG.C_NUM_MONITOR_SLOTS {2} \
+   CONFIG.C_SLOT_0_INTF_TYPE {xilinx.com:interface:bram_rtl:1.0} \
+   CONFIG.C_SLOT_0_TYPE {0} \
+   CONFIG.C_SLOT_1_APC_EN {0} \
+   CONFIG.C_SLOT_1_AXI_AR_SEL_DATA {1} \
+   CONFIG.C_SLOT_1_AXI_AR_SEL_TRIG {1} \
+   CONFIG.C_SLOT_1_AXI_AW_SEL_DATA {1} \
+   CONFIG.C_SLOT_1_AXI_AW_SEL_TRIG {1} \
+   CONFIG.C_SLOT_1_AXI_B_SEL_DATA {1} \
+   CONFIG.C_SLOT_1_AXI_B_SEL_TRIG {1} \
+   CONFIG.C_SLOT_1_AXI_R_SEL_DATA {1} \
+   CONFIG.C_SLOT_1_AXI_R_SEL_TRIG {1} \
+   CONFIG.C_SLOT_1_AXI_W_SEL_DATA {1} \
+   CONFIG.C_SLOT_1_AXI_W_SEL_TRIG {1} \
+   CONFIG.C_SLOT_1_INTF_TYPE {xilinx.com:interface:aximm_rtl:1.0} \
  ] $system_ila_0
 
   # Create interface connections
   connect_bd_intf_net -intf_net axi_bram_ctrl_0_BRAM_PORTA [get_bd_intf_pins axi_bram_ctrl_0/BRAM_PORTA] [get_bd_intf_pins blk_mem_gen_0/BRAM_PORTA]
-  connect_bd_intf_net -intf_net axi_bram_ctrl_0_BRAM_PORTB [get_bd_intf_pins axi_bram_ctrl_0/BRAM_PORTB] [get_bd_intf_pins blk_mem_gen_1/BRAM_PORTA]
+connect_bd_intf_net -intf_net [get_bd_intf_nets axi_bram_ctrl_0_BRAM_PORTA] [get_bd_intf_pins axi_bram_ctrl_0/BRAM_PORTA] [get_bd_intf_pins system_ila_0/SLOT_0_BRAM]
+  set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_intf_nets axi_bram_ctrl_0_BRAM_PORTA]
   connect_bd_intf_net -intf_net axi_interconnect_0_M00_AXI [get_bd_intf_pins LED4_AXI_0/CSR] [get_bd_intf_pins axi_interconnect_csr/M00_AXI]
   connect_bd_intf_net -intf_net axi_interconnect_csr_M01_AXI [get_bd_intf_pins axi_bram_ctrl_0/S_AXI] [get_bd_intf_pins axi_interconnect_csr/M01_AXI]
+connect_bd_intf_net -intf_net [get_bd_intf_nets axi_interconnect_csr_M01_AXI] [get_bd_intf_pins axi_interconnect_csr/M01_AXI] [get_bd_intf_pins system_ila_0/SLOT_1_AXI]
+  set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_intf_nets axi_interconnect_csr_M01_AXI]
   connect_bd_intf_net -intf_net processing_system7_0_DDR [get_bd_intf_ports DDR] [get_bd_intf_pins processing_system7_0/DDR]
   connect_bd_intf_net -intf_net processing_system7_0_FIXED_IO [get_bd_intf_ports FIXED_IO] [get_bd_intf_pins processing_system7_0/FIXED_IO]
   connect_bd_intf_net -intf_net processing_system7_0_M_AXI_GP0 [get_bd_intf_pins axi_interconnect_csr/S00_AXI] [get_bd_intf_pins processing_system7_0/M_AXI_GP0]
-connect_bd_intf_net -intf_net [get_bd_intf_nets processing_system7_0_M_AXI_GP0] [get_bd_intf_pins processing_system7_0/M_AXI_GP0] [get_bd_intf_pins system_ila_0/SLOT_0_AXI]
-  set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_intf_nets processing_system7_0_M_AXI_GP0]
 
   # Create port connections
-  connect_bd_net -net LED4_AXI_0_LED [get_bd_ports LED] [get_bd_pins LED4_AXI_0/LED] [get_bd_pins system_ila_0/probe0]
-  set_property HDL_ATTRIBUTE.DEBUG {true} [get_bd_nets LED4_AXI_0_LED]
+  connect_bd_net -net LED4_AXI_0_LED [get_bd_ports LED] [get_bd_pins LED4_AXI_0/LED]
   connect_bd_net -net proc_sys_reset_0_interconnect_aresetn [get_bd_pins axi_interconnect_csr/ARESETN] [get_bd_pins axi_interconnect_csr/M00_ARESETN] [get_bd_pins axi_interconnect_csr/M01_ARESETN] [get_bd_pins axi_interconnect_csr/S00_ARESETN] [get_bd_pins proc_sys_reset_0/interconnect_aresetn]
   connect_bd_net -net proc_sys_reset_0_peripheral_aresetn [get_bd_pins LED4_AXI_0/ARESETn] [get_bd_pins axi_bram_ctrl_0/s_axi_aresetn] [get_bd_pins proc_sys_reset_0/peripheral_aresetn] [get_bd_pins system_ila_0/resetn]
   connect_bd_net -net processing_system7_0_FCLK_CLK0 [get_bd_pins LED4_AXI_0/ACLOCK] [get_bd_pins axi_bram_ctrl_0/s_axi_aclk] [get_bd_pins axi_interconnect_csr/ACLK] [get_bd_pins axi_interconnect_csr/M00_ACLK] [get_bd_pins axi_interconnect_csr/M01_ACLK] [get_bd_pins axi_interconnect_csr/S00_ACLK] [get_bd_pins proc_sys_reset_0/slowest_sync_clk] [get_bd_pins processing_system7_0/FCLK_CLK0] [get_bd_pins processing_system7_0/M_AXI_GP0_ACLK] [get_bd_pins system_ila_0/clk]
