@@ -1,3 +1,6 @@
 [submodule "LED_AXI"]
 	path = LED_AXI
 	url = https://github.com/ikwzm/LED_AXI
+[submodule "uiomem"]
+	path = uiomem
+	url = https://github.com/ikwzm/uiomem.git
