@@ -7,7 +7,7 @@ This Repository provides example for uiomem and FPGA-SoC-Linux.
 
  * Board: ZYBO-Z7
  * OS: FPGA-SoC-Linux v1.0.1 ([https://github.com/ikwzm/FPGA-SoC-Linux/tree/v1.0.1])
- * uiomem (develop) ([https://github.com/ikwzm/uiomem/tree/develop])
+ * uiomem (0.0.4) ([https://github.com/ikwzm/uiomem/tree/develop])
 
 # Boot ZYBO-Z7 and login fpga user
 
@@ -75,15 +75,15 @@ dtbocfg.rb --install plbram_256k --dts plbram_256k_dbg.dts
 <stdin>:16.18-20.20: Warning (unit_address_vs_reg): /fragment@1/__overlay__/uiomem_plbram: node has a reg or ranges property, but no unit name
 <stdin>:21.9-24.6: Warning (unit_address_vs_reg): /fragment@1/__overlay__/led4: node has a reg or ranges property, but no unit name
 <stdin>:9.13-26.5: Warning (avoid_unnecessary_addr_size): /fragment@1: unnecessary #address-cells/#size-cells without "ranges" or child "reg" property
-[ 1602.008252] fpga_manager fpga0: writing plbram_256k_dbg.bin to Xilinx Zynq FPGA Manager
-[ 1602.086725] OF: overlay: WARNING: memory leak will occur if overlay removed, property: /amba/fpga-region0/firmware-name
-[ 1602.100285] uiomem uiomem0: driver version = 0.0.3
-[ 1602.105086] uiomem uiomem0: major number   = 243
-[ 1602.110344] uiomem uiomem0: minor number   = 0
-[ 1602.114790] uiomem uiomem0: range address  = 0x40000000
-[ 1602.120075] uiomem uiomem0: range size     = 262144
-[ 1602.124963] uiomem 40000000.uiomem_plbram: driver installed.
-[ 1602.132811] uio_pdrv_genirq 43c00000.led4: IRQ index 0 not found
+[  722.212273] fpga_manager fpga0: writing plbram_256k_dbg.bin to Xilinx Zynq FPGA Manager
+[  722.290827] OF: overlay: WARNING: memory leak will occur if overlay removed, property: /amba/fpga-region0/firmware-name
+[  722.303892] uiomem uiomem0: driver version = 0.0.4
+[  722.310286] uiomem uiomem0: major number   = 244
+[  722.314909] uiomem uiomem0: minor number   = 0
+[  722.321570] uiomem uiomem0: range address  = 0x40000000
+[  722.327975] uiomem uiomem0: range size     = 262144
+[  722.332854] uiomem 40000000.uiomem_plbram: driver installed.
+[  722.341583] uio_pdrv_genirq 43c00000.led4: IRQ index 0 not found
 ```
 
 ## Build plbram_test
@@ -98,17 +98,29 @@ gcc  -o plbram_test plbram_test.c
 ```console
 shell$ ./plbram_test
 size=262144
-mmap write test(SIZE=262144, O_SYNC=1) : time = 0.006474 sec
-mmap read  test(SIZE=262144, O_SYNC=1) : time = 0.005590 sec
+mmap write test : sync=1 time=0.006423 sec (0.006420 sec)
+mmap read  test : sync=1 time=0.005649 sec (0.005646 sec)
 compare = ok
-mmap write test(SIZE=262144, O_SYNC=1) : time = 0.006136 sec
-mmap read  test(SIZE=262144, O_SYNC=0) : time = 0.002326 sec
+mmap write test : sync=0 time=0.002500 sec (0.000944 sec)
+mmap read  test : sync=1 time=0.005673 sec (0.005671 sec)
 compare = ok
-mmap write test(SIZE=262144, O_SYNC=0) : time = 0.002436 sec
-mmap read  test(SIZE=262144, O_SYNC=1) : time = 0.005614 sec
+mmap write test : sync=1 time=0.006579 sec (0.006575 sec)
+mmap read  test : sync=0 time=0.002333 sec (0.001299 sec)
 compare = ok
-mmap write test(SIZE=262144, O_SYNC=0) : time = 0.002464 sec
-mmap read  test(SIZE=262144, O_SYNC=0) : time = 0.002348 sec
+mmap write test : sync=0 time=0.002446 sec (0.000936 sec)
+mmap read  test : sync=0 time=0.002436 sec (0.001379 sec)
+compare = ok
+file write test : sync=1 time=0.001312 sec (0.001309 sec)
+mmap read  test : sync=0 time=0.002325 sec (0.001300 sec)
+compare = ok
+file write test : sync=0 time=0.001814 sec (0.001307 sec)
+mmap read  test : sync=0 time=0.002405 sec (0.001379 sec)
+compare = ok
+mmap write test : sync=0 time=0.002454 sec (0.000924 sec)
+file read  test : sync=1 time=0.001942 sec (0.001940 sec)
+compare = ok
+mmap write test : sync=0 time=0.002458 sec (0.000925 sec)
+file read  test : sync=0 time=0.002921 sec (0.001908 sec)
 compare = ok
 ```
 
