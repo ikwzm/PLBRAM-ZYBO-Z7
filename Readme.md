@@ -6,8 +6,8 @@ This Repository provides example for uiomem and FPGA-SoC-Linux.
 # Requirement
 
  * Board: ZYBO-Z7
- * OS: FPGA-SoC-Linux v1.0.1 ([https://github.com/ikwzm/FPGA-SoC-Linux/tree/v1.0.1])
- * uiomem (0.0.4) ([https://github.com/ikwzm/uiomem/tree/develop])
+ * OS: FPGA-SoC-Linux v1.0.1 https://github.com/ikwzm/FPGA-SoC-Linux/tree/v1.0.1
+ * uiomem (v1.0.0-alpha.1) https://github.com/ikwzm/uiomem/tree/v1.0.0-alpha.1
 
 # Boot ZYBO-Z7 and login fpga user
 
@@ -77,7 +77,7 @@ dtbocfg.rb --install plbram_256k --dts plbram_256k_dbg.dts
 <stdin>:9.13-26.5: Warning (avoid_unnecessary_addr_size): /fragment@1: unnecessary #address-cells/#size-cells without "ranges" or child "reg" property
 [  722.212273] fpga_manager fpga0: writing plbram_256k_dbg.bin to Xilinx Zynq FPGA Manager
 [  722.290827] OF: overlay: WARNING: memory leak will occur if overlay removed, property: /amba/fpga-region0/firmware-name
-[  722.303892] uiomem uiomem0: driver version = 0.0.4
+[  722.303892] uiomem uiomem0: driver version = 1.0.0-alpha.1
 [  722.310286] uiomem uiomem0: major number   = 244
 [  722.314909] uiomem uiomem0: minor number   = 0
 [  722.321570] uiomem uiomem0: range address  = 0x40000000
