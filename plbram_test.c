@@ -132,44 +132,53 @@ size_t uiomem_sync_for_dev(struct uiomem* uiomem)
 
 struct test_time
 {
-    struct timeval main;
-    struct timeval sync_for_cpu;
-    struct timeval sync_for_dev;
-    struct timeval total;
+    struct timespec main;
+    struct timespec sync_for_cpu;
+    struct timespec sync_for_dev;
+    struct timespec total;
 };
 
-static void diff_time(struct timeval* run_time, struct timeval* start_time, struct timeval* end_time)
+static void diff_time(struct timespec* run_time, struct timespec* start_time, struct timespec* end_time)
 {
-    if (end_time->tv_usec < start_time->tv_usec) {
+    if (end_time->tv_nsec < start_time->tv_nsec) {
         run_time->tv_sec  = end_time->tv_sec  - start_time->tv_sec  - 1;
-        run_time->tv_usec = end_time->tv_usec - start_time->tv_usec + 1000*1000;
+        run_time->tv_nsec = end_time->tv_nsec - start_time->tv_nsec + 1000*1000*1000;
     } else {
         run_time->tv_sec  = end_time->tv_sec  - start_time->tv_sec ;
-        run_time->tv_usec = end_time->tv_usec - start_time->tv_usec;
+        run_time->tv_nsec = end_time->tv_nsec - start_time->tv_nsec;
     }
+}
+
+static void print_time(struct test_time* time)
+{
+    double total_msec = ((time->total.tv_sec) +
+                         (time->total.tv_nsec / (1000.0*1000.0*1000.0))) * 1000.0;
+    double main_msec  = ((time->main.tv_sec ) +
+                         (time->main.tv_nsec  / (1000.0*1000.0*1000.0))) * 1000.0;
+    printf("time=%.6f msec (%.6f msec)\n", total_msec, main_msec);
 }
 
 int uiomem_mmap_write_test(struct uiomem* uiomem, void* buf, unsigned int size, int sync, struct test_time* time)
 {
-    int            fd;
-    void*          iomem;
-    struct timeval test_start_time, test_end_time;
-    struct timeval main_start_time, main_end_time;
+    int             fd;
+    void*           iomem;
+    struct timespec test_start_time, test_end_time;
+    struct timespec main_start_time, main_end_time;
 
     if (sync == 0)
         uiomem_set_sync_area(uiomem, 0, size, UIOMEM_WRITE_ONLY);
       
     if ((fd  = uiomem_open(uiomem, O_RDWR | ((sync)?O_SYNC:0))) != -1) {
         iomem = mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-        gettimeofday(&test_start_time, NULL);
+        clock_gettime(CLOCK_REALTIME, &test_start_time);
         if (sync == 0)
             uiomem_sync_for_cpu(uiomem);
-        gettimeofday(&main_start_time, NULL);
+        clock_gettime(CLOCK_REALTIME, &main_start_time);
         memcpy(iomem, buf, size);
-        gettimeofday(&main_end_time, NULL);
+        clock_gettime(CLOCK_REALTIME, &main_end_time);
         if (sync == 0)
             uiomem_sync_for_dev(uiomem);
-        gettimeofday(&test_end_time  , NULL);
+        clock_gettime(CLOCK_REALTIME, &test_end_time);
         if (time != NULL) {
             diff_time(&time->total       , &test_start_time, &test_end_time  );
             diff_time(&time->sync_for_cpu, &test_start_time, &main_start_time);
@@ -185,25 +194,25 @@ int uiomem_mmap_write_test(struct uiomem* uiomem, void* buf, unsigned int size, 
 
 int uiomem_mmap_read_test(struct uiomem* uiomem, void* buf, unsigned int size, int sync, struct test_time* time)
 {
-    int            fd;
-    void*          iomem;
-    struct timeval test_start_time, test_end_time;
-    struct timeval main_start_time, main_end_time;
+    int             fd;
+    void*           iomem;
+    struct timespec test_start_time, test_end_time;
+    struct timespec main_start_time, main_end_time;
 
     if (sync == 0)
         uiomem_set_sync_area(uiomem, 0, size, UIOMEM_READ_ONLY);
       
     if ((fd  = uiomem_open(uiomem, O_RDWR | ((sync)?O_SYNC:0))) != -1) {
         iomem = mmap(NULL, size, PROT_READ|PROT_WRITE, MAP_SHARED, fd, 0);
-        gettimeofday(&test_start_time, NULL);
+        clock_gettime(CLOCK_REALTIME, &test_start_time);
         if (sync == 0)
             uiomem_sync_for_cpu(uiomem);
-        gettimeofday(&main_start_time, NULL);
+        clock_gettime(CLOCK_REALTIME, &main_start_time);
         memcpy(buf, iomem, size);
-        gettimeofday(&main_end_time  , NULL);
+        clock_gettime(CLOCK_REALTIME, &main_end_time);
         if (sync == 0)
             uiomem_sync_for_dev(uiomem);
-        gettimeofday(&test_end_time  , NULL);
+        clock_gettime(CLOCK_REALTIME, &test_end_time);
         if (time != NULL) {
             diff_time(&time->total       , &test_start_time, &test_end_time  );
             diff_time(&time->sync_for_cpu, &test_start_time, &main_start_time);
@@ -219,20 +228,20 @@ int uiomem_mmap_read_test(struct uiomem* uiomem, void* buf, unsigned int size, i
 
 int uiomem_file_write_test(struct uiomem* uiomem, void* buf, unsigned int size, int sync, struct test_time* time)
 {
-    int            fd;
-    int            len;
-    void*          ptr;
-    struct timeval test_start_time, test_end_time;
-    struct timeval main_start_time, main_end_time;
+    int             fd;
+    int             len;
+    void*           ptr;
+    struct timespec test_start_time, test_end_time;
+    struct timespec main_start_time, main_end_time;
 
     if (sync == 0)
         uiomem_set_sync_area(uiomem, 0, size, UIOMEM_WRITE_ONLY);
       
     if ((fd  = uiomem_open(uiomem, O_RDWR | ((sync)?O_SYNC:0))) != -1) {
-        gettimeofday(&test_start_time, NULL);
+        clock_gettime(CLOCK_REALTIME, &test_start_time);
         if (sync == 0)
             uiomem_sync_for_cpu(uiomem);
-        gettimeofday(&main_start_time, NULL);
+        clock_gettime(CLOCK_REALTIME, &main_start_time);
         len = size;
         ptr = buf;
         while(len > 0) {
@@ -243,10 +252,10 @@ int uiomem_file_write_test(struct uiomem* uiomem, void* buf, unsigned int size, 
             ptr += count;
             len -= count;
         }
-        gettimeofday(&main_end_time, NULL);
+        clock_gettime(CLOCK_REALTIME, &main_end_time);
         if (sync == 0)
             uiomem_sync_for_dev(uiomem);
-        gettimeofday(&test_end_time, NULL);
+        clock_gettime(CLOCK_REALTIME, &test_end_time);
         if (time != NULL) {
             diff_time(&time->total       , &test_start_time, &test_end_time  );
             diff_time(&time->sync_for_cpu, &test_start_time, &main_start_time);
@@ -262,20 +271,20 @@ int uiomem_file_write_test(struct uiomem* uiomem, void* buf, unsigned int size, 
 
 int uiomem_file_read_test(struct uiomem* uiomem, void* buf, unsigned int size, int sync, struct test_time* time)
 {
-    int            fd;
-    int            len;
-    void*          ptr;
-    struct timeval test_start_time, test_end_time;
-    struct timeval main_start_time, main_end_time;
+    int             fd;
+    int             len;
+    void*           ptr;
+    struct timespec test_start_time, test_end_time;
+    struct timespec main_start_time, main_end_time;
 
     if (sync == 0)
         uiomem_set_sync_area(uiomem, 0, size, UIOMEM_READ_ONLY);
       
     if ((fd  = uiomem_open(uiomem, O_RDWR | ((sync)?O_SYNC:0))) != -1) {
-        gettimeofday(&test_start_time, NULL);
+        clock_gettime(CLOCK_REALTIME, &test_start_time);
         if (sync == 0)
             uiomem_sync_for_cpu(uiomem);
-        gettimeofday(&main_start_time, NULL);
+        clock_gettime(CLOCK_REALTIME, &main_start_time);
         len = size;
         ptr = buf;
         while(len > 0) {
@@ -286,10 +295,10 @@ int uiomem_file_read_test(struct uiomem* uiomem, void* buf, unsigned int size, i
             ptr += count;
             len -= count;
         }
-        gettimeofday(&main_end_time  , NULL);
+        clock_gettime(CLOCK_REALTIME, &main_end_time);
         if (sync == 0)
             uiomem_sync_for_dev(uiomem);
-        gettimeofday(&test_end_time  , NULL);
+        clock_gettime(CLOCK_REALTIME, &test_end_time);
         if (time != NULL) {
             diff_time(&time->total       , &test_start_time, &test_end_time  );
             diff_time(&time->sync_for_cpu, &test_start_time, &main_start_time);
@@ -365,10 +374,10 @@ void main()
         memset(dst, 0, buf_size);                          \
         printf(#w_type " write test : sync=%d ", w_sync);  \
         uiomem_##w_type##_write_test(uiomem, src, size, w_sync, &w_time); \
-        printf("time=%ld.%06ld sec (%ld.%06ld sec)\n", w_time.total.tv_sec, w_time.total.tv_usec, w_time.main.tv_sec, w_time.main.tv_usec); \
+        print_time(&w_time);                 \
         printf(#r_type " read  test : sync=%d ", r_sync);  \
         uiomem_##r_type##_read_test (uiomem, dst, size, r_sync, &r_time); \
-        printf("time=%ld.%06ld sec (%ld.%06ld sec)\n", r_time.total.tv_sec, r_time.total.tv_usec, r_time.main.tv_sec, r_time.main.tv_usec); \
+        print_time(&r_time);                 \
         if (memcmp(dst, src, size) != 0) {   \
             printf("compare = mismatch\n");  \
             err_count++;                     \
