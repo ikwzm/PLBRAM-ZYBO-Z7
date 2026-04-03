@@ -49,8 +49,4 @@ file "/dev/#{UIOMEM_DEVICE_NAME}" do
   Rake::Task["install"].invoke
 end
 
-file "plbram_test"    => ["plbram_test.c"] do
-  sh "#{CC} #{CFLAGS} -o plbram_test plbram_test.c"
-end
-  
-task :default => ["/dev/#{UIOMEM_DEVICE_NAME}", "plbram_test"]
+task :default => ["/dev/#{UIOMEM_DEVICE_NAME}"]
