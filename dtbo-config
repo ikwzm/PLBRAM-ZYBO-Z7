@@ -3,7 +3,7 @@
 # Simple script for device tree overlay configure.
 #
 __copyright__='Copyright (C) 2022-2024 ikwzm'
-__version__='0.4'
+__version__='0.5'
 __license__='BSD-2-Clause'
 __author__='ikwzm'
 __author_email__='ichiro_k@ca2.so-net.ne.jp'
@@ -100,16 +100,28 @@ dtbo_remove()
     run_command "rmdir $CONFIG_DTBO_PATH/$1"
 }
 
+dtbo_start()
+{
+    if [ -f "$CONFIG_DTBO_PATH/$1/status" ]; then
+        dtbo_status=$(cat "$CONFIG_DTBO_PATH/$1/status" )
+        if [ $dtbo_status = "0" ] || [ $dtbo_status = "1" ]; then
+            run_command "echo 1 > $CONFIG_DTBO_PATH/$1/status"
+        fi
+    fi
+}
+
 dtbo_load_dts()
 {
     check_config_dtbo_path
     run_command "cat $2 | dtc -@ -I dts -O dtb > $CONFIG_DTBO_PATH/$1/dtbo"
+    dtbo_start $1
 }
 
 dtbo_load_dtb()
 {
     check_config_dtbo_path
     run_command "cat $2 > $CONFIG_DTBO_PATH/$1/dtbo"
+    dtbo_start $1
 }
 
 dtbo_list()
