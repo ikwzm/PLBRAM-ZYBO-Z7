@@ -12,7 +12,7 @@ require 'rake/clean'
 desc "Install fpga and devicetrees"
 task :install => ["/lib/firmware/#{FPGA_BITSTREAM_FILE}", DEVICE_TREE_FILE] do
   begin
-    sh "./dtbocfg.rb --install #{DEVICE_TREE_DIRECTORY} --dts #{DEVICE_TREE_FILE}"
+    sh "./dtbo-config --install #{DEVICE_TREE_DIRECTORY} --dts #{DEVICE_TREE_FILE}"
   rescue => e
     print "error raised:"
     p e
@@ -37,7 +37,7 @@ task :uninstall do
   if (File.exist?(device_file) == false)
     abort "can not #{device_file} uninstalled: does not already exists."
   end
-  sh "./dtbocfg.rb --remove #{DEVICE_TREE_DIRECTORY}"
+  sh "./dtbo-config --remove #{DEVICE_TREE_DIRECTORY}"
 end
 
 file "/lib/firmware/" + FPGA_BITSTREAM_FILE => [ FPGA_BITSTREAM_GZ_FILE ] do
